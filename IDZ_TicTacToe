@@ -1,0 +1,116 @@
+import tkinter as tk
+from tkinter import messagebox
+
+class TicTacToe:
+    def __init__(self):
+        self.root = tk.Tk()
+        self.root.title("Хрестики-нолики")
+
+        # Змінні для імен гравців та поточного гравця
+        self.player_x_name = tk.StringVar()
+        self.player_o_name = tk.StringVar()
+        self.player_x_name.set("Гравець X")
+        self.player_o_name.set("Гравець O")
+        self.current_player = "X"
+
+        # Змінні для збереження імен та кольорів гравців
+        self.players = {"X": {"name_var": self.player_x_name, "color": "red"},
+                        "O": {"name_var": self.player_o_name, "color": "blue"}}
+
+        # Створення ігрового поля
+        self.board = [""] * 9
+        self.buttons = []
+        for i in range(3):
+            row_buttons = []
+            for j in range(3):
+                button = tk.Button(self.root, text="", font=("Helvetica", 24), width=6, height=3,
+                                   command=lambda i=i, j=j: self.on_button_click(i, j))
+                button.grid(row=i, column=j)
+                row_buttons.append(button)
+            self.buttons.append(row_buttons)
+
+        # Створення мітки для виводу імені та повідомлення про переможця
+        self.winner_label = tk.Label(self.root, text="", font=("Helvetica", 16))
+        self.winner_label.grid(row=3, column=0, columnspan=3)
+
+        # Створення полей для введення імен гравців
+        entry_label_player_x = tk.Label(self.root, text="Ім'я гравця X:")
+        entry_label_player_x.grid(row=4, column=0)
+        entry_player_x = tk.Entry(self.root, textvariable=self.player_x_name)
+        entry_player_x.grid(row=4, column=1)
+
+        entry_label_player_o = tk.Label(self.root, text="Ім'я гравця O:")
+        entry_label_player_o.grid(row=5, column=0)
+        entry_player_o = tk.Entry(self.root, textvariable=self.player_o_name)
+        entry_player_o.grid(row=5, column=1)
+
+        # Кнопка для підтвердження імен гравців
+        confirm_button = tk.Button(self.root, text="Почати гру", command=self.confirm_names)
+        confirm_button.grid(row=6, column=0, columnspan=3)
+
+        # Кнопка для початку нової гри
+        new_game_button = tk.Button(self.root, text="Нова гра", command=self.new_game)
+        new_game_button.grid(row=7, column=0, columnspan=3)
+
+    def confirm_names(self):
+        # Оновлення мітки поточного гравця
+        self.update_current_player_label()
+
+    def on_button_click(self, row, col):
+        # Перевірка, чи клітинка не вже використана
+        if self.board[row * 3 + col] == "":
+            self.board[row * 3 + col] = self.current_player
+            self.buttons[row][col].config(text=self.current_player, fg=self.players[self.current_player]["color"])
+
+            # Перевірка на перемогу
+            if self.check_winner():
+                winner_name = self.players[self.current_player]["name_var"].get()
+                self.winner_label.config(text=f"{winner_name} виграв!", fg=self.players[self.current_player]["color"])
+            elif "" not in self.board:
+                self.winner_label.config(text="Гра закінчилася внічию.", fg="black")
+            else:
+                self.current_player = "O" if self.current_player == "X" else "X"
+                self.update_current_player_label()
+
+    def check_winner(self):
+        # Перевірка рядків, стовпців та діагоналей на перемогу
+        for i in range(3):
+            if self.board[i * 3] == self.board[i * 3 + 1] == self.board[i * 3 + 2] != "":
+                return True
+            if self.board[i] == self.board[i + 3] == self.board[i + 6] != "":
+                return True
+        if self.board[0] == self.board[4] == self.board[8] != "":
+            return True
+        if self.board[2] == self.board[4] == self.board[6] != "":
+            return True
+        return False
+
+    def reset_game(self):
+        # Скидання гри
+        self.current_player = "X"
+        self.board = [""] * 9
+        for i in range(3):
+            for j in range(3):
+                self.buttons[i][j].config(text="", fg="black")
+        self.winner_label.config(text="")
+        self.update_current_player_label()
+
+    def new_game(self):
+        # Початок нової гри
+        self.reset_game()
+        self.winner_label.config(text="")
+        self.player_x_name.set("Гравець X")
+        self.player_o_name.set("Гравець O")
+
+    def update_current_player_label(self):
+        # Оновлення мітки поточного гравця
+        current_player_name = self.players[self.current_player]["name_var"].get()
+        self.winner_label.config(text=f"{current_player_name}, ваш хід", fg=self.players[self.current_player]["color"])
+
+    def run(self):
+        # Запуск головного циклу графічного інтерфейсу
+        self.root.mainloop()
+
+# Створення об'єкту гри та запуск
+game = TicTacToe()
+game.run()
